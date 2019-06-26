@@ -1,4 +1,4 @@
-package melody
+package gowebsocket
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 )
 
 type TestServer struct {
-	m *Melody
+	m *GoWebSocket
 }
 
 func NewTestServerHandler(handler handleMessageFunc) *TestServer {
@@ -159,7 +159,7 @@ func TestLen(t *testing.T) {
 	connected := connect - disconnected
 
 	if echo.m.Len() != connected {
-		t.Errorf("melody len %d should equal %d", echo.m.Len(), connected)
+		t.Errorf("gowebsocket len %d should equal %d", echo.m.Len(), connected)
 	}
 }
 

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/melody.v1"
+	gowebsocket "go-websocket"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
-	m := melody.New()
+	m := gowebsocket.New()
 
 	r.GET("/", func(c *gin.Context) {
 		http.ServeFile(c.Writer, c.Request, "index.html")
@@ -18,7 +19,7 @@ func main() {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
+	m.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		m.Broadcast(msg)
 	})
 

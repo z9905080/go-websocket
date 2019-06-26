@@ -1,18 +1,19 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-fsnotify/fsnotify"
-	"gopkg.in/olahol/melody.v1"
+	gowebsocket "go-websocket"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-fsnotify/fsnotify"
 )
 
 func main() {
 	file := "file.txt"
 
 	r := gin.Default()
-	m := melody.New()
+	m := gowebsocket.New()
 	w, _ := fsnotify.NewWatcher()
 
 	r.GET("/", func(c *gin.Context) {
@@ -23,7 +24,7 @@ func main() {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
-	m.HandleConnect(func(s *melody.Session) {
+	m.HandleConnect(func(s *gowebsocket.Session) {
 		content, _ := ioutil.ReadFile(file)
 		s.Write(content)
 	})

@@ -28,7 +28,7 @@
 
 ## 2016-05-09
 
-* Add method `HandlePong` to melody instance.
+* Add method `HandlePong` to gowebsocket instance.
 
 ## 2015-10-07
 
@@ -36,7 +36,7 @@
 
 ## 2015-09-03
 
-* Add `Close` method to melody instance.
+* Add `Close` method to gowebsocket instance.
 
 ### 2015-06-10
 

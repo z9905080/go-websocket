@@ -1,16 +1,17 @@
 package main
 
 import (
+	gowebsocket "go-websocket"
+	"net/http"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
-	"gopkg.in/olahol/melody.v1"
-	"net/http"
 )
 
 func main() {
 	e := echo.New()
-	m := melody.New()
+	m := gowebsocket.New()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -25,7 +26,7 @@ func main() {
 		return nil
 	})
 
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
+	m.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		m.Broadcast(msg)
 	})
 

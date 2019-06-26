@@ -1,8 +1,8 @@
-package melody
+package gowebsocket
 
 import "time"
 
-// Config melody configuration struct.
+// Config gowebsocket configuration struct.
 type Config struct {
 	WriteWait         time.Duration // Milliseconds until write times out.
 	PongWait          time.Duration // Timeout for waiting on pong.

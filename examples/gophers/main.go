@@ -1,13 +1,13 @@
 package main
 
 import (
+	gowebsocket "go-websocket"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/melody.v1"
 )
 
 // GopherInfo contains information about the gopher on screen
@@ -17,8 +17,8 @@ type GopherInfo struct {
 
 func main() {
 	router := gin.Default()
-	mrouter := melody.New()
-	gophers := make(map[*melody.Session]*GopherInfo)
+	mrouter := gowebsocket.New()
+	gophers := make(map[*gowebsocket.Session]*GopherInfo)
 	lock := new(sync.Mutex)
 	counter := 0
 
@@ -30,7 +30,7 @@ func main() {
 		mrouter.HandleRequest(c.Writer, c.Request)
 	})
 
-	mrouter.HandleConnect(func(s *melody.Session) {
+	mrouter.HandleConnect(func(s *gowebsocket.Session) {
 		lock.Lock()
 		for _, info := range gophers {
 			s.Write([]byte("set " + info.ID + " " + info.X + " " + info.Y))
@@ -41,14 +41,14 @@ func main() {
 		lock.Unlock()
 	})
 
-	mrouter.HandleDisconnect(func(s *melody.Session) {
+	mrouter.HandleDisconnect(func(s *gowebsocket.Session) {
 		lock.Lock()
 		mrouter.BroadcastOthers([]byte("dis "+gophers[s].ID), s)
 		delete(gophers, s)
 		lock.Unlock()
 	})
 
-	mrouter.HandleMessage(func(s *melody.Session, msg []byte) {
+	mrouter.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		p := strings.Split(string(msg), " ")
 		lock.Lock()
 		info := gophers[s]

@@ -1,4 +1,4 @@
-package melody
+package gowebsocket
 
 import (
 	"errors"
@@ -53,8 +53,8 @@ type handleCloseFunc func(*Session, int, string) error
 type handleSessionFunc func(*Session)
 type filterFunc func(*Session) bool
 
-// Melody implements a websocket manager.
-type Melody struct {
+// GoWebSocket implements a websocket manager.
+type GoWebSocket struct {
 	Config                   *Config
 	Upgrader                 *websocket.Upgrader
 	messageHandler           handleMessageFunc
@@ -69,8 +69,8 @@ type Melody struct {
 	hub                      *hub
 }
 
-// New creates a new melody instance with default Upgrader and Config.
-func New() *Melody {
+// New creates a new gowebsocket instance with default Upgrader and Config.
+func New() *GoWebSocket {
 	upgrader := &websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -81,7 +81,7 @@ func New() *Melody {
 
 	go hub.run()
 
-	return &Melody{
+	return &GoWebSocket{
 		Config:                   newConfig(),
 		Upgrader:                 upgrader,
 		messageHandler:           func(*Session, []byte) {},
@@ -98,42 +98,42 @@ func New() *Melody {
 }
 
 // HandleConnect fires fn when a session connects.
-func (m *Melody) HandleConnect(fn func(*Session)) {
+func (m *GoWebSocket) HandleConnect(fn func(*Session)) {
 	m.connectHandler = fn
 }
 
 // HandleDisconnect fires fn when a session disconnects.
-func (m *Melody) HandleDisconnect(fn func(*Session)) {
+func (m *GoWebSocket) HandleDisconnect(fn func(*Session)) {
 	m.disconnectHandler = fn
 }
 
 // HandlePong fires fn when a pong is received from a session.
-func (m *Melody) HandlePong(fn func(*Session)) {
+func (m *GoWebSocket) HandlePong(fn func(*Session)) {
 	m.pongHandler = fn
 }
 
 // HandleMessage fires fn when a text message comes in.
-func (m *Melody) HandleMessage(fn func(*Session, []byte)) {
+func (m *GoWebSocket) HandleMessage(fn func(*Session, []byte)) {
 	m.messageHandler = fn
 }
 
 // HandleMessageBinary fires fn when a binary message comes in.
-func (m *Melody) HandleMessageBinary(fn func(*Session, []byte)) {
+func (m *GoWebSocket) HandleMessageBinary(fn func(*Session, []byte)) {
 	m.messageHandlerBinary = fn
 }
 
 // HandleSentMessage fires fn when a text message is successfully sent.
-func (m *Melody) HandleSentMessage(fn func(*Session, []byte)) {
+func (m *GoWebSocket) HandleSentMessage(fn func(*Session, []byte)) {
 	m.messageSentHandler = fn
 }
 
 // HandleSentMessageBinary fires fn when a binary message is successfully sent.
-func (m *Melody) HandleSentMessageBinary(fn func(*Session, []byte)) {
+func (m *GoWebSocket) HandleSentMessageBinary(fn func(*Session, []byte)) {
 	m.messageSentHandlerBinary = fn
 }
 
 // HandleError fires fn when a session has an error.
-func (m *Melody) HandleError(fn func(*Session, error)) {
+func (m *GoWebSocket) HandleError(fn func(*Session, error)) {
 	m.errorHandler = fn
 }
 
@@ -150,21 +150,21 @@ func (m *Melody) HandleError(fn func(*Session, error)) {
 // normal error handling. Applications should only set a close handler when the
 // application must perform some action before sending a close frame back to
 // the session.
-func (m *Melody) HandleClose(fn func(*Session, int, string) error) {
+func (m *GoWebSocket) HandleClose(fn func(*Session, int, string) error) {
 	if fn != nil {
 		m.closeHandler = fn
 	}
 }
 
-// HandleRequest upgrades http requests to websocket connections and dispatches them to be handled by the melody instance.
-func (m *Melody) HandleRequest(w http.ResponseWriter, r *http.Request) error {
+// HandleRequest upgrades http requests to websocket connections and dispatches them to be handled by the gowebsocket instance.
+func (m *GoWebSocket) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 	return m.HandleRequestWithKeys(w, r, nil)
 }
 
 // HandleRequestWithKeys does the same as HandleRequest but populates session.Keys with keys.
-func (m *Melody) HandleRequestWithKeys(w http.ResponseWriter, r *http.Request, keys map[string]interface{}) error {
+func (m *GoWebSocket) HandleRequestWithKeys(w http.ResponseWriter, r *http.Request, keys map[string]interface{}) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is closed")
+		return errors.New("gowebsocket instance is closed")
 	}
 
 	conn, err := m.Upgrader.Upgrade(w, r, w.Header())
@@ -174,13 +174,13 @@ func (m *Melody) HandleRequestWithKeys(w http.ResponseWriter, r *http.Request, k
 	}
 
 	session := &Session{
-		Request: r,
-		Keys:    keys,
-		conn:    conn,
-		output:  make(chan *envelope, m.Config.MessageBufferSize),
-		melody:  m,
-		open:    true,
-		rwmutex: &sync.RWMutex{},
+		Request:     r,
+		Keys:        keys,
+		conn:        conn,
+		output:      make(chan *envelope, m.Config.MessageBufferSize),
+		gowebsocket: m,
+		open:        true,
+		rwmutex:     &sync.RWMutex{},
 	}
 
 	m.hub.register <- session
@@ -203,9 +203,9 @@ func (m *Melody) HandleRequestWithKeys(w http.ResponseWriter, r *http.Request, k
 }
 
 // Broadcast broadcasts a text message to all sessions.
-func (m *Melody) Broadcast(msg []byte) error {
+func (m *GoWebSocket) Broadcast(msg []byte) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is closed")
+		return errors.New("gowebsocket instance is closed")
 	}
 
 	message := &envelope{t: websocket.TextMessage, msg: msg}
@@ -215,9 +215,9 @@ func (m *Melody) Broadcast(msg []byte) error {
 }
 
 // BroadcastFilter broadcasts a text message to all sessions that fn returns true for.
-func (m *Melody) BroadcastFilter(msg []byte, fn func(*Session) bool) error {
+func (m *GoWebSocket) BroadcastFilter(msg []byte, fn func(*Session) bool) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is closed")
+		return errors.New("gowebsocket instance is closed")
 	}
 
 	message := &envelope{t: websocket.TextMessage, msg: msg, filter: fn}
@@ -227,14 +227,14 @@ func (m *Melody) BroadcastFilter(msg []byte, fn func(*Session) bool) error {
 }
 
 // BroadcastOthers broadcasts a text message to all sessions except session s.
-func (m *Melody) BroadcastOthers(msg []byte, s *Session) error {
+func (m *GoWebSocket) BroadcastOthers(msg []byte, s *Session) error {
 	return m.BroadcastFilter(msg, func(q *Session) bool {
 		return s != q
 	})
 }
 
 // BroadcastMultiple broadcasts a text message to multiple sessions given in the sessions slice.
-func (m *Melody) BroadcastMultiple(msg []byte, sessions []*Session) error {
+func (m *GoWebSocket) BroadcastMultiple(msg []byte, sessions []*Session) error {
 	for _, sess := range sessions {
 		if writeErr := sess.Write(msg); writeErr != nil {
 			return writeErr
@@ -244,9 +244,9 @@ func (m *Melody) BroadcastMultiple(msg []byte, sessions []*Session) error {
 }
 
 // BroadcastBinary broadcasts a binary message to all sessions.
-func (m *Melody) BroadcastBinary(msg []byte) error {
+func (m *GoWebSocket) BroadcastBinary(msg []byte) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is closed")
+		return errors.New("gowebsocket instance is closed")
 	}
 
 	message := &envelope{t: websocket.BinaryMessage, msg: msg}
@@ -256,9 +256,9 @@ func (m *Melody) BroadcastBinary(msg []byte) error {
 }
 
 // BroadcastBinaryFilter broadcasts a binary message to all sessions that fn returns true for.
-func (m *Melody) BroadcastBinaryFilter(msg []byte, fn func(*Session) bool) error {
+func (m *GoWebSocket) BroadcastBinaryFilter(msg []byte, fn func(*Session) bool) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is closed")
+		return errors.New("gowebsocket instance is closed")
 	}
 
 	message := &envelope{t: websocket.BinaryMessage, msg: msg, filter: fn}
@@ -268,16 +268,16 @@ func (m *Melody) BroadcastBinaryFilter(msg []byte, fn func(*Session) bool) error
 }
 
 // BroadcastBinaryOthers broadcasts a binary message to all sessions except session s.
-func (m *Melody) BroadcastBinaryOthers(msg []byte, s *Session) error {
+func (m *GoWebSocket) BroadcastBinaryOthers(msg []byte, s *Session) error {
 	return m.BroadcastBinaryFilter(msg, func(q *Session) bool {
 		return s != q
 	})
 }
 
-// Close closes the melody instance and all connected sessions.
-func (m *Melody) Close() error {
+// Close closes the gowebsocket instance and all connected sessions.
+func (m *GoWebSocket) Close() error {
 	if m.hub.closed() {
-		return errors.New("melody instance is already closed")
+		return errors.New("gowebsocket instance is already closed")
 	}
 
 	m.hub.exit <- &envelope{t: websocket.CloseMessage, msg: []byte{}}
@@ -285,11 +285,11 @@ func (m *Melody) Close() error {
 	return nil
 }
 
-// CloseWithMsg closes the melody instance with the given close payload and all connected sessions.
+// CloseWithMsg closes the gowebsocket instance with the given close payload and all connected sessions.
 // Use the FormatCloseMessage function to format a proper close message payload.
-func (m *Melody) CloseWithMsg(msg []byte) error {
+func (m *GoWebSocket) CloseWithMsg(msg []byte) error {
 	if m.hub.closed() {
-		return errors.New("melody instance is already closed")
+		return errors.New("gowebsocket instance is already closed")
 	}
 
 	m.hub.exit <- &envelope{t: websocket.CloseMessage, msg: msg}
@@ -298,12 +298,12 @@ func (m *Melody) CloseWithMsg(msg []byte) error {
 }
 
 // Len return the number of connected sessions.
-func (m *Melody) Len() int {
+func (m *GoWebSocket) Len() int {
 	return m.hub.len()
 }
 
-// IsClosed returns the status of the melody instance.
-func (m *Melody) IsClosed() bool {
+// IsClosed returns the status of the gowebsocket instance.
+func (m *GoWebSocket) IsClosed() bool {
 	return m.hub.closed()
 }
 

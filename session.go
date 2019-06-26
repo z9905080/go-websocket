@@ -1,4 +1,4 @@
-package melody
+package gowebsocket
 
 import (
 	"errors"
@@ -11,25 +11,25 @@ import (
 
 // Session wrapper around websocket connections.
 type Session struct {
-	Request *http.Request
-	Keys    map[string]interface{}
-	conn    *websocket.Conn
-	output  chan *envelope
-	melody  *Melody
-	open    bool
-	rwmutex *sync.RWMutex
+	Request     *http.Request
+	Keys        map[string]interface{}
+	conn        *websocket.Conn
+	output      chan *envelope
+	gowebsocket *GoWebSocket
+	open        bool
+	rwmutex     *sync.RWMutex
 }
 
 func (s *Session) writeMessage(message *envelope) {
 	if s.closed() {
-		s.melody.errorHandler(s, errors.New("tried to write to closed a session"))
+		s.gowebsocket.errorHandler(s, errors.New("tried to write to closed a session"))
 		return
 	}
 
 	select {
 	case s.output <- message:
 	default:
-		s.melody.errorHandler(s, errors.New("session message buffer is full"))
+		s.gowebsocket.errorHandler(s, errors.New("session message buffer is full"))
 	}
 }
 
@@ -38,7 +38,7 @@ func (s *Session) writeRaw(message *envelope) error {
 		return errors.New("tried to write to a closed session")
 	}
 
-	s.conn.SetWriteDeadline(time.Now().Add(s.melody.Config.WriteWait))
+	s.conn.SetWriteDeadline(time.Now().Add(s.gowebsocket.Config.WriteWait))
 	err := s.conn.WriteMessage(message.t, message.msg)
 
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *Session) ping() {
 }
 
 func (s *Session) writePump() {
-	ticker := time.NewTicker(s.melody.Config.PingPeriod)
+	ticker := time.NewTicker(s.gowebsocket.Config.PingPeriod)
 	defer ticker.Stop()
 
 loop:
@@ -84,7 +84,7 @@ loop:
 			err := s.writeRaw(msg)
 
 			if err != nil {
-				s.melody.errorHandler(s, err)
+				s.gowebsocket.errorHandler(s, err)
 				break loop
 			}
 
@@ -93,11 +93,11 @@ loop:
 			}
 
 			if msg.t == websocket.TextMessage {
-				s.melody.messageSentHandler(s, msg.msg)
+				s.gowebsocket.messageSentHandler(s, msg.msg)
 			}
 
 			if msg.t == websocket.BinaryMessage {
-				s.melody.messageSentHandlerBinary(s, msg.msg)
+				s.gowebsocket.messageSentHandlerBinary(s, msg.msg)
 			}
 		case <-ticker.C:
 			s.ping()
@@ -106,18 +106,18 @@ loop:
 }
 
 func (s *Session) readPump() {
-	s.conn.SetReadLimit(s.melody.Config.MaxMessageSize)
-	s.conn.SetReadDeadline(time.Now().Add(s.melody.Config.PongWait))
+	s.conn.SetReadLimit(s.gowebsocket.Config.MaxMessageSize)
+	s.conn.SetReadDeadline(time.Now().Add(s.gowebsocket.Config.PongWait))
 
 	s.conn.SetPongHandler(func(string) error {
-		s.conn.SetReadDeadline(time.Now().Add(s.melody.Config.PongWait))
-		s.melody.pongHandler(s)
+		s.conn.SetReadDeadline(time.Now().Add(s.gowebsocket.Config.PongWait))
+		s.gowebsocket.pongHandler(s)
 		return nil
 	})
 
-	if s.melody.closeHandler != nil {
+	if s.gowebsocket.closeHandler != nil {
 		s.conn.SetCloseHandler(func(code int, text string) error {
-			return s.melody.closeHandler(s, code, text)
+			return s.gowebsocket.closeHandler(s, code, text)
 		})
 	}
 
@@ -125,16 +125,16 @@ func (s *Session) readPump() {
 		t, message, err := s.conn.ReadMessage()
 
 		if err != nil {
-			s.melody.errorHandler(s, err)
+			s.gowebsocket.errorHandler(s, err)
 			break
 		}
 
 		if t == websocket.TextMessage {
-			s.melody.messageHandler(s, message)
+			s.gowebsocket.messageHandler(s, message)
 		}
 
 		if t == websocket.BinaryMessage {
-			s.melody.messageHandlerBinary(s, message)
+			s.gowebsocket.messageHandlerBinary(s, message)
 		}
 	}
 }

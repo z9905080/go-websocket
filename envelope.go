@@ -1,4 +1,4 @@
-package melody
+package gowebsocket
 
 type envelope struct {
 	t      int

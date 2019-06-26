@@ -1,8 +1,8 @@
-# melody
+# gowebsocket
 
-[![Build Status](https://travis-ci.org/olahol/melody.svg)](https://travis-ci.org/olahol/melody)
-[![Coverage Status](https://img.shields.io/coveralls/olahol/melody.svg?style=flat)](https://coveralls.io/r/olahol/melody)
-[![GoDoc](https://godoc.org/github.com/olahol/melody?status.svg)](https://godoc.org/github.com/olahol/melody)
+[![Build Status](https://travis-ci.org/olahol/gowebsocket.svg)](https://travis-ci.org/olahol/gowebsocket)
+[![Coverage Status](https://img.shields.io/coveralls/olahol/gowebsocket.svg?style=flat)](https://coveralls.io/r/olahol/gowebsocket)
+[![GoDoc](https://godoc.org/github.com/olahol/gowebsocket?status.svg)](https://godoc.org/github.com/olahol/gowebsocket)
 
 > :notes: Minimalist websocket framework for Go.
 
@@ -19,12 +19,12 @@ your way so you can write real-time apps. Features include:
 ## Install
 
 ```bash
-go get gopkg.in/olahol/melody.v1
+go get gopkg.in/olahol/gowebsocket.v1
 ```
 
-## [Example: chat](https://github.com/olahol/melody/tree/master/examples/chat)
+## [Example: chat](https://github.com/olahol/gowebsocket/tree/master/examples/chat)
 
-[![Chat](https://cdn.rawgit.com/olahol/melody/master/examples/chat/demo.gif "Demo")](https://github.com/olahol/melody/tree/master/examples/chat)
+[![Chat](https://cdn.rawgit.com/olahol/gowebsocket/master/examples/chat/demo.gif "Demo")](https://github.com/olahol/gowebsocket/tree/master/examples/chat)
 
 Using [Gin](https://github.com/gin-gonic/gin):
 ```go
@@ -32,13 +32,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/melody.v1"
+	"gopkg.in/olahol/gowebsocket.v1"
 	"net/http"
 )
 
 func main() {
 	r := gin.Default()
-	m := melody.New()
+	m := gowebsocket.New()
 
 	r.GET("/", func(c *gin.Context) {
 		http.ServeFile(c.Writer, c.Request, "index.html")
@@ -48,7 +48,7 @@ func main() {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
+	m.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		m.Broadcast(msg)
 	})
 
@@ -64,13 +64,13 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
-	"gopkg.in/olahol/melody.v1"
+	"gopkg.in/olahol/gowebsocket.v1"
 	"net/http"
 )
 
 func main() {
 	e := echo.New()
-	m := melody.New()
+	m := gowebsocket.New()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -85,7 +85,7 @@ func main() {
 		return nil
 	})
 
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
+	m.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		m.Broadcast(msg)
 	})
 
@@ -93,16 +93,16 @@ func main() {
 }
 ```
 
-## [Example: gophers](https://github.com/olahol/melody/tree/master/examples/gophers)
+## [Example: gophers](https://github.com/olahol/gowebsocket/tree/master/examples/gophers)
 
-[![Gophers](https://cdn.rawgit.com/olahol/melody/master/examples/gophers/demo.gif "Demo")](https://github.com/olahol/melody/tree/master/examples/gophers)
+[![Gophers](https://cdn.rawgit.com/olahol/gowebsocket/master/examples/gophers/demo.gif "Demo")](https://github.com/olahol/gowebsocket/tree/master/examples/gophers)
 
 ```go
 package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/melody.v1"
+	"gopkg.in/olahol/gowebsocket.v1"
 	"net/http"
 	"strconv"
 	"strings"
@@ -115,8 +115,8 @@ type GopherInfo struct {
 
 func main() {
 	router := gin.Default()
-	mrouter := melody.New()
-	gophers := make(map[*melody.Session]*GopherInfo)
+	mrouter := gowebsocket.New()
+	gophers := make(map[*gowebsocket.Session]*GopherInfo)
 	lock := new(sync.Mutex)
 	counter := 0
 
@@ -128,7 +128,7 @@ func main() {
 		mrouter.HandleRequest(c.Writer, c.Request)
 	})
 
-	mrouter.HandleConnect(func(s *melody.Session) {
+	mrouter.HandleConnect(func(s *gowebsocket.Session) {
 		lock.Lock()
 		for _, info := range gophers {
 			s.Write([]byte("set " + info.ID + " " + info.X + " " + info.Y))
@@ -139,14 +139,14 @@ func main() {
 		lock.Unlock()
 	})
 
-	mrouter.HandleDisconnect(func(s *melody.Session) {
+	mrouter.HandleDisconnect(func(s *gowebsocket.Session) {
 		lock.Lock()
 		mrouter.BroadcastOthers([]byte("dis "+gophers[s].ID), s)
 		delete(gophers, s)
 		lock.Unlock()
 	})
 
-	mrouter.HandleMessage(func(s *melody.Session, msg []byte) {
+	mrouter.HandleMessage(func(s *gowebsocket.Session, msg []byte) {
 		p := strings.Split(string(msg), " ")
 		lock.Lock()
 		info := gophers[s]
@@ -162,9 +162,9 @@ func main() {
 }
 ```
 
-### [More examples](https://github.com/olahol/melody/tree/master/examples)
+### [More examples](https://github.com/olahol/gowebsocket/tree/master/examples)
 
-## [Documentation](https://godoc.org/github.com/olahol/melody)
+## [Documentation](https://godoc.org/github.com/olahol/gowebsocket)
 
 ## Contributors
 
@@ -180,6 +180,6 @@ func main() {
 If you are getting a `403` when trying  to connect to your websocket you can [change allow all origin hosts](http://godoc.org/github.com/gorilla/websocket#hdr-Origin_Considerations):
 
 ```go
-m := melody.New()
+m := gowebsocket.New()
 m.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 ```

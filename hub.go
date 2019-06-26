@@ -1,4 +1,4 @@
-package melody
+package gowebsocket
 
 import (
 	"sync"
