@@ -19,7 +19,7 @@ your way so you can write real-time apps. Features include:
 ## Install
 
 ```bash
-go get gopkg.in/olahol/gowebsocket.v1
+go get github.com/z9905080/go-websocket
 ```
 
 ## [Example: chat](https://github.com/olahol/gowebsocket/tree/master/examples/chat)
@@ -32,7 +32,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/gowebsocket.v1"
+	"github.com/z9905080/go-websocket"
 	"net/http"
 )
 
