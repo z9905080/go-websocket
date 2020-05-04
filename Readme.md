@@ -174,7 +174,7 @@ func main() {
 * Heikki Uljas (@huljas)
 * Robbie Trencheny (@robbiet480)
 * yangjinecho (@yangjinecho)
-* z9905080( @
+* z9905080 (@z9905080)
 
 ## FAQ
 
