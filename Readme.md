@@ -24,7 +24,7 @@ go get github.com/z9905080/go-websocket
 
 ## [Example: chat](https://github.com/olahol/gowebsocket/tree/master/examples/chat)
 
-[![Chat](https://cdn.rawgit.com/olahol/gowebsocket/master/examples/chat/demo.gif "Demo")](https://github.com/olahol/gowebsocket/tree/master/examples/chat)
+[![Chat](https://cdn.rawgit.com/olahol/gowebsocket/master/examples/chat/demo.gif "Demo")](https://github.com/z9905080/go-websocket/tree/master/examples/chat)
 
 Using [Gin](https://github.com/gin-gonic/gin):
 ```go
@@ -64,7 +64,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/standard"
 	"github.com/labstack/echo/middleware"
-	"gopkg.in/olahol/gowebsocket.v1"
+	"github.com/z9905080/go-websocket"
 	"net/http"
 )
 
@@ -93,16 +93,16 @@ func main() {
 }
 ```
 
-## [Example: gophers](https://github.com/olahol/gowebsocket/tree/master/examples/gophers)
+## [Example: gophers](https://github.com/z9905080/go-websocket/tree/master/examples/gophers)
 
-[![Gophers](https://cdn.rawgit.com/olahol/gowebsocket/master/examples/gophers/demo.gif "Demo")](https://github.com/olahol/gowebsocket/tree/master/examples/gophers)
+[![Gophers](https://cdn.rawgit.com/github.com/z9905080/go-websocket/master/examples/gophers/demo.gif "Demo")](https://github.com/z9905080/go-websocket/tree/master/examples/gophers)
 
 ```go
 package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/gowebsocket.v1"
+	"github.com/z9905080/go-websocket"
 	"net/http"
 	"strconv"
 	"strings"
@@ -164,7 +164,7 @@ func main() {
 
 ### [More examples](https://github.com/olahol/gowebsocket/tree/master/examples)
 
-## [Documentation](https://godoc.org/github.com/olahol/gowebsocket)
+## [Documentation](https://godoc.org/github.com/z9905080/go-websocket)
 
 ## Contributors
 
@@ -174,6 +174,7 @@ func main() {
 * Heikki Uljas (@huljas)
 * Robbie Trencheny (@robbiet480)
 * yangjinecho (@yangjinecho)
+* z9905080( @
 
 ## FAQ
 
